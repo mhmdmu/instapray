@@ -1,4 +1,4 @@
-.PHONY: up down run fmt test vet build ci
+.PHONY: db-up db-down run fmt test vet build ci
 
 db-up:
 	docker compose up -d
