@@ -33,9 +33,9 @@ CREATE TABLE ledger (
     -- Constraints
     CONSTRAINT chk_money_in_out
         CHECK (
-            (money_in >= 0 AND money_out = 0)
+            (money_in > 0 AND money_out = 0)
             OR
-            (money_out >= 0 AND money_in = 0)
+            (money_out > 0 AND money_in = 0)
         ),
 
     CONSTRAINT fk_ledger_transfer FOREIGN KEY (transfer_id) REFERENCES transfer(id),
