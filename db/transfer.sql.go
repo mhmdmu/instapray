@@ -9,58 +9,6 @@ import (
 	"context"
 )
 
-const createLedgerCredit = `-- name: CreateLedgerCredit :one
-INSERT INTO ledger (transfer_id, account_id, money_in, money_out)
-VALUES ($1, $2, $3, 0)
-    RETURNING id, transfer_id, account_id, money_in, money_out, created_at
-`
-
-type CreateLedgerCreditParams struct {
-	TransferID int64
-	AccountID  int64
-	Amount     int64
-}
-
-func (q *Queries) CreateLedgerCredit(ctx context.Context, arg CreateLedgerCreditParams) (Ledger, error) {
-	row := q.db.QueryRow(ctx, createLedgerCredit, arg.TransferID, arg.AccountID, arg.Amount)
-	var i Ledger
-	err := row.Scan(
-		&i.ID,
-		&i.TransferID,
-		&i.AccountID,
-		&i.MoneyIn,
-		&i.MoneyOut,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
-const createLedgerDebit = `-- name: CreateLedgerDebit :one
-INSERT INTO ledger (transfer_id, account_id, money_in, money_out)
-VALUES ($1, $2, 0, $3)
-    RETURNING id, transfer_id, account_id, money_in, money_out, created_at
-`
-
-type CreateLedgerDebitParams struct {
-	TransferID int64
-	AccountID  int64
-	Amount     int64
-}
-
-func (q *Queries) CreateLedgerDebit(ctx context.Context, arg CreateLedgerDebitParams) (Ledger, error) {
-	row := q.db.QueryRow(ctx, createLedgerDebit, arg.TransferID, arg.AccountID, arg.Amount)
-	var i Ledger
-	err := row.Scan(
-		&i.ID,
-		&i.TransferID,
-		&i.AccountID,
-		&i.MoneyIn,
-		&i.MoneyOut,
-		&i.CreatedAt,
-	)
-	return i, err
-}
-
 const createTransfer = `-- name: CreateTransfer :one
 INSERT INTO transfer (sender_id, receiver_id, amount)
 VALUES ($1, $2, $3)
@@ -83,56 +31,5 @@ func (q *Queries) CreateTransfer(ctx context.Context, arg CreateTransferParams) 
 		&i.Amount,
 		&i.CreatedAt,
 	)
-	return i, err
-}
-
-const creditAccount = `-- name: CreditAccount :one
-UPDATE account
-SET balance = balance + $1
-WHERE id = $2
-    RETURNING id, balance, created_at
-`
-
-type CreditAccountParams struct {
-	Amount int64
-	ID     int64
-}
-
-func (q *Queries) CreditAccount(ctx context.Context, arg CreditAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, creditAccount, arg.Amount, arg.ID)
-	var i Account
-	err := row.Scan(&i.ID, &i.Balance, &i.CreatedAt)
-	return i, err
-}
-
-const debitAccount = `-- name: DebitAccount :one
-UPDATE account
-SET balance = balance - $1
-WHERE id = $2 AND balance >= $1
-    RETURNING id, balance, created_at
-`
-
-type DebitAccountParams struct {
-	Amount int64
-	ID     int64
-}
-
-func (q *Queries) DebitAccount(ctx context.Context, arg DebitAccountParams) (Account, error) {
-	row := q.db.QueryRow(ctx, debitAccount, arg.Amount, arg.ID)
-	var i Account
-	err := row.Scan(&i.ID, &i.Balance, &i.CreatedAt)
-	return i, err
-}
-
-const getAccountForUpdate = `-- name: GetAccountForUpdate :one
-SELECT id, balance, created_at FROM account
-WHERE id = $1
-    FOR NO KEY UPDATE
-`
-
-func (q *Queries) GetAccountForUpdate(ctx context.Context, id int64) (Account, error) {
-	row := q.db.QueryRow(ctx, getAccountForUpdate, id)
-	var i Account
-	err := row.Scan(&i.ID, &i.Balance, &i.CreatedAt)
 	return i, err
 }
